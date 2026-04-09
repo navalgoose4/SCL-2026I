@@ -6,19 +6,6 @@ Hernán Felipe García Arias, PhD
 Carlos David Zuluaga, PhD
 """
 
-"""
-Realizar la comparativa de los distintos metodos a disposición con respecto
-a mis funciones de transferencia
-
-1. Comparar el modelo ideal de cada uno de los metodos (Grafico) y luego comparar
-el modelo con los datos reales de cada uno de los metodos (Grafico)}
-
-2. Calcular R2 y MSR (Errores entre medición)
-
-- Valores de 15% y 40%
-
-"""
-
 import tclab
 import numpy as np
 import time
@@ -49,14 +36,14 @@ def save_txt(t, u1, u2, y1, y2, sp1, sp2, filename='data.txt'):
 # ------------------------------------------------------------------------------
 # Mostrar versión de firmware y encender LED al 100% de brillo
 # ------------------------------------------------------------------------------
-#print("Firmware:", lab.version)
+print("Firmware:", lab.version)
 print("Encendiendo LED al 100%")
 lab.LED(100)
 
 # ------------------------------------------------------------------------------
 # Parámetros de la prueba
 # ------------------------------------------------------------------------------
-duracion_min = 10.0             # Tiempo de corrida en minutos
+duracion_min = 60.0             # Tiempo de corrida en minutos
 ciclos = int(60 * duracion_min) # Número de iteraciones de 1 segundo
 t_array = np.zeros(ciclos)      # Vector de tiempos
 
@@ -107,34 +94,27 @@ try:
         T1[i] = lab.T1
         T2[i] = lab.T2
         
-        # AQUI: Implementación del controlador para calentar o enfriar
-        # según el error entre la temperatura pedida y el punto de cosigna.
-        # Parametros del controlador PID (ejemplo, ajustar según necesidad)
-        t_i = 38.6
-        t_d = 9.65
-        K_p = 10.6512
+        # AQUI: lógica de controlador o estimador (si aplica)
+        # Parametros de control
+        Kc = 750
+        tauI = 40
+        tauD = 10
+        SP1 = 40.0  # Punto de consigna para T1 (°C)
         Q_bias = 0.0
         ierr = 0.0
-        prev_err = 0.0
-        sp1 = 33.0  # Punto de consigna para T1 (°C)
-        
+        prev_err= 0.0
+
         # Leer temperatura actual
         T1[i] = lab.T1
-        T2[i] = lab.T2
-
-        # Calcular error - spi 25
-        err = sp1 - T1[i]
-
+        # Calculo del error
+        err = SP1 - T1[i]
         # Termino i n t e g r a l
         ierr += err
-            
         # Termino d e r i v a t i v o
         deriv = err - prev_err
         prev_err = err
-            
         # Accion de control PID
-        Q1[i] = Q_bias + K_p* err
-
+        Q1[i] = Q_bias + Kc*err
         # Anti−windup
         if Q1[i] >= 100:
             Q1[i] = 100
@@ -147,7 +127,7 @@ try:
         lab.Q1(Q1[i])
         lab.Q2(Q2[i])
         time.sleep(1)
-    
+
         # Imprimir datos en consola
         print(f"{t_array[i]:6.1f} {Q1[i]:6.2f} {Q2[i]:6.2f} {T1[i]:7.2f} {T2[i]:7.2f}")
         
@@ -156,24 +136,25 @@ try:
         ax1 = plt.subplot(2,1,1)
         ax1.grid(True)
         ax1.plot(t_array[:i], T1[:i], 'r-o', label='T1')
-        ax1.plot(t_array[:i], T2[:i], 'b-x', label='T2')
+        #ax1.plot(t_array[:i], T2[:i], 'b-x', label='T2')
         plt.ylabel('Temperatura (°C)')
         plt.legend(loc='best')
         
         ax2 = plt.subplot(2,1,2)
         ax2.grid(True)
         ax2.plot(t_array[:i], Q1[:i], 'r-', label='Q1')
-        ax2.plot(t_array[:i], Q2[:i], 'b--', label='Q2')
+        #ax2.plot(t_array[:i], Q2[:i], 'b--', label='Q2')
         plt.ylabel('Calentadores (%)')
         plt.xlabel('Tiempo (s)')
         plt.legend(loc='best')
         
         plt.pause(0.05)
-    
+
+        
     # Al terminar el bucle, apagar calentadores
     lab.Q1(0)
     lab.Q2(0)
-    
+
     # Guardar datos y figura
     save_txt(t_array, Q1, Q2, T1, T2, Tset1, Tset2, filename='data.txt')
     plt.savefig('resultado_prueba.png')
