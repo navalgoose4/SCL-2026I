@@ -43,7 +43,7 @@ lab.LED(100)
 # ------------------------------------------------------------------------------
 # Parámetros de la prueba
 # ------------------------------------------------------------------------------
-duracion_min = 60.0             # Tiempo de corrida en minutos
+duracion_min = 20.0             # Tiempo de corrida en minutos
 ciclos = int(60 * duracion_min) # Número de iteraciones de 1 segundo
 t_array = np.zeros(ciclos)      # Vector de tiempos
 
@@ -60,11 +60,16 @@ Q1 = np.zeros(ciclos)
 Q2 = np.zeros(ciclos)
 Q1[10:] = 20.0  # Escalón en cal1
 
+#Puntos para el punto de consigna
+SP1 = np.zeros(ciclos)
+SP1[0:299] = 35  # punto de consigna en 35°
+SP1[299:] = 45  # punto de consigna en 45°
+
+
 # Mostrar encabezado en consola
 print("Iniciando bucle principal. Ctrl-C para detener.")
 print(f"{'t(s)':>6s} {'Q1(%)':>6s} {'Q2(%)':>6s} {'T1(°C)':>7s} {'T2(°C)':>7s}")
 print(f"{t_array[0]:6.1f} {Q1[0]:6.2f} {Q2[0]:6.2f} {T1[0]:7.2f} {T2[0]:7.2f}")
-
 # ------------------------------------------------------------------------------
 # Preparar gráfico
 # ------------------------------------------------------------------------------
@@ -78,13 +83,18 @@ plt.show()
 t_inicio = time.time()
 t_ant = t_inicio
 
+
+Q_bias = 0.0
+ierr = 0.0
+prev_err= 0.0
+
 try:
     for i in range(1, ciclos):
         # Regular frecuencia de muestreo ~1 s
         dt = time.time() - t_ant
         t_sleep = max(0.0, 1.0 - dt)
         time.sleep(t_sleep)
-        
+        print("SP1= ", SP1[i])
         # Actualizar tiempo
         t_actual = time.time()
         t_array[i] = t_actual - t_inicio
@@ -97,24 +107,21 @@ try:
         # AQUI: lógica de controlador o estimador (si aplica)
         # Parametros de control
         Kc = 750
-        tauI = 40
-        tauD = 10
-        SP1 = 40.0  # Punto de consigna para T1 (°C)
-        Q_bias = 0.0
-        ierr = 0.0
-        prev_err= 0.0
+        tauI = 54
+        tauD = 13.5
+        #SP1 = 40.0  # Punto de consigna para T1 (°C)
 
         # Leer temperatura actual
         T1[i] = lab.T1
         # Calculo del error
-        err = SP1 - T1[i]
+        err = SP1[i] - T1[i]
         # Termino i n t e g r a l
         ierr += err
         # Termino d e r i v a t i v o
         deriv = err - prev_err
         prev_err = err
         # Accion de control PID
-        Q1[i] = Q_bias + Kc*err
+        Q1[i] = Q_bias + Kc*err + (Kc/ tauI)*ierr + Kc*tauD*deriv
         # Anti−windup
         if Q1[i] >= 100:
             Q1[i] = 100
