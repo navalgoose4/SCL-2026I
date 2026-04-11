@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 # ------------------------------------------------------------------------------
 # Conexión con el dispositivo Arduino + TCLab
 # ------------------------------------------------------------------------------
-lab = tclab.TCLab()
+lab = tclab.TCLabModel()
 
 # ------------------------------------------------------------------------------
 # Función para guardar datos en un archivo de texto
@@ -36,14 +36,14 @@ def save_txt(t, u1, u2, y1, y2, sp1, sp2, filename='data.txt'):
 # ------------------------------------------------------------------------------
 # Mostrar versión de firmware y encender LED al 100% de brillo
 # ------------------------------------------------------------------------------
-print("Firmware:", lab.version)
+#print("Firmware:", lab.version)
 print("Encendiendo LED al 100%")
 lab.LED(100)
 
 # ------------------------------------------------------------------------------
 # Parámetros de la prueba
 # ------------------------------------------------------------------------------
-duracion_min = 20.0             # Tiempo de corrida en minutos
+duracion_min = 10.0             # Tiempo de corrida en minutos
 ciclos = int(60 * duracion_min) # Número de iteraciones de 1 segundo
 t_array = np.zeros(ciclos)      # Vector de tiempos
 
