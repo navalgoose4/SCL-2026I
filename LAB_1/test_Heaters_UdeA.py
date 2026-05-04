@@ -83,7 +83,11 @@ plt.show()
 t_inicio = time.time()
 t_ant = t_inicio
 
+<<<<<<< Updated upstream
 
+=======
+SP1 = 35.0  # Punto de consigna para T1 (°C)
+>>>>>>> Stashed changes
 Q_bias = 0.0
 ierr = 0.0
 prev_err= 0.0
@@ -106,10 +110,16 @@ try:
         
         # AQUI: lógica de controlador o estimador (si aplica)
         # Parametros de control
+<<<<<<< Updated upstream
         Kc = 750
         tauI = 54
         tauD = 13.5
         #SP1 = 40.0  # Punto de consigna para T1 (°C)
+=======
+        Kc = 10.45
+        tauI = 19.1366
+        tauD = -0.0822
+>>>>>>> Stashed changes
 
         # Leer temperatura actual
         T1[i] = lab.T1
@@ -121,7 +131,11 @@ try:
         deriv = err - prev_err
         prev_err = err
         # Accion de control PID
+<<<<<<< Updated upstream
         Q1[i] = Q_bias + Kc*err + (Kc/ tauI)*ierr + Kc*tauD*deriv
+=======
+        Q1[i] = Q_bias + Kc*err + (Kc/tauI)*ierr + Kc*tauD*deriv
+>>>>>>> Stashed changes
         # Anti−windup
         if Q1[i] >= 100:
             Q1[i] = 100
